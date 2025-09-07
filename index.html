@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>War Thunder - Tanques</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background-color: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                linear-gradient(rgba(160, 153, 153, 0.85), rgba(0, 0, 0, 0.85)),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23111"/><path d="M0 0L100 100" stroke="%23222" stroke-width="1"/><path d="M100 0L0 100" stroke="%23222" stroke-width="1"/></svg>');
+        }
+        
+        .header {
+            background-color: rgba(76, 71, 71, 0.95);
+            padding: 20px 0;
+            text-align: center;
+            border-bottom: 3px solid #517bc8;
+            box-shadow: 0 5px 15px rgba(255, 252, 252, 0.402);
+        }
+        
+        .logo {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #c8a951;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+        
+        .nav {
+            background-color: rgba(30, 30, 30, 0.95);
+            padding: 15px 0;
+            border-bottom: 2px solid #555;
+        }
+        
+        .menu {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        
+        .menu li {
+            margin: 0 15px;
+        }
+        
+        .menu a {
+            color: #e0e0e0;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 12px 20px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            display: inline-block;
+            letter-spacing: 1px;
+        }
+        
+        .menu a:hover {
+            background-color: #c8a951;
+            color: #868383;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(200, 169, 81, 0.3);
+        }
+        
+        .menu a.active {
+            background-color: #c8a951;
+            color: #1a1a1a;
+            box-shadow: 0 0 15px rgba(200, 169, 81, 0.5);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+            flex: 1;
+        }
+        
+        .filters {
+            background-color: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filter-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #c8a951;
+        }
+        
+        .filter-group select, .filter-group input {
+            width: 100%;
+            padding: 8px;
+            background-color: #333;
+            color: #e0e0e0;
+            border: 1px solid #555;
+            border-radius: 4px;
+        }
+        
+        .tanks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .tank-card {
+            background-color: #2a2a2a;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .tank-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(200, 169, 81, 0.2);
+        }
+        
+        .tank-type-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            z-index: 2;
+        }
+        
+        .type-medium {
+            background-color: #3a6ea5;
+        }
+        
+        .type-heavy {
+            background-color: #a53a3a;
+        }
+        
+        .type-light {
+            background-color: #3aa56e;
+        }
+        
+        .type-td {
+            background-color: #a5a53a;
+            color: #000;
+        }
+        
+        .type-spaa {
+            background-color: #8c3aa5;
+        }
+        
+        .tank-image {
+            height: 180px;
+            background-color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #777;
+            font-style: italic;
+            border-bottom: 2px solid #c8a951;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tank-image::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(200, 169, 81, 0.1) 0%, rgba(0,0,0,0.5) 100%);
+        }
+        
+        .tank-nation {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0,0,0,0.7);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: #c8a951;
+            z-index: 2;
+        }
+        
+        .tank-rank {
+            position: absolute;
+            top: 40px;
+            right: 10px;
+            background-color: rgba(0,0,0,0.7);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: #c8a951;
+            z-index: 2;
+        }
+        
+        .tank-info {
+            padding: 15px;
+        }
+        
+        .tank-name {
+            font-size: 1.2rem;
+            color: #c8a951;
+            margin-bottom: 10px;
+        }
+        
+        .tank-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .tank-detail {
+            font-size: 0.9rem;
+        }
+        
+        .detail-label {
+            color: #999;
+        }
+        
+        .tank-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background-color: #2a2a2a;
+            margin: 50px auto;
+            max-width: 900px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            background-color: #333;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #c8a951;
+        }
+        
+        .modal-title {
+            color: #c8a951;
+            font-size: 1.5rem;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: #e0e0e0;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .modal-image {
+            background-color: #333;
+            height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #777;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .modal-image::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(200, 169, 81, 0.1) 0%, rgba(0,0,0,0.5) 100%);
+        }
+        
+        .modal-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .stat-box {
+            background-color: #333;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        
+        .stat-title {
+            color: #c8a951;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #444;
+        }
+        
+        .history-box {
+            grid-column: 1 / -1;
+            background-color: #333;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        
+        .history-text {
+            line-height: 1.6;
+            color: #ccc;
+        }
+        
+        .footer {
+            background-color: rgba(20, 20, 20, 0.95);
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #333;
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .modal-body {
+                grid-template-columns: 1fr;
+            }
+            
+            .tanks-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            .menu {
+                flex-wrap: wrap;
+            }
+            
+            .menu li {
+                margin: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">WAR THUNDER</div>
+    </div>
+    
+    <div class="nav">
+        <ul class="menu">
+            <li><a href="#" class="active">Tanques</a></li>
+        </ul>
+    </div>
+    
+    <div class="container">
+        <div class="filters">
+            <div class="filter-group">
+                <label for="nation">Nación</label>
+                <select id="nation">
+                    <option value="all">Todas</option>
+                    <option value="usa">USA</option>
+                    <option value="germany">Alemania</option>
+                    <option value="ussr">URSS</option>
+                    <option value="britain">Gran Bretaña</option>
+                    <option value="japan">Japón</option>
+                    <option value="sweden">Suecia</option>
+                    <option value="israel">Israel</option>
+                    <option value="china">China</option>
+                    <option value="italy">Italia</option>
+                    <option value="france">Francia</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="rank">Rango</label>
+                <select id="rank">
+                    <option value="all">Todos</option>
+                    <option value="1">I</option>
+                    <option value="2">II</option>
+                    <option value="3">III</option>
+                    <option value="4">IV</option>
+                    <option value="5">V</option>
+                    <option value="6">VI</option>
+                    <option value="7">VII</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="type">Tipo</label>
+                <select id="type">
+                    <option value="all">Todos</option>
+                    <option value="light">Tanque Ligero</option>
+                    <option value="medium">Tanque Medio</option>
+                    <option value="heavy">Tanque Pesado</option>
+                    <option value="td">Cazatanques</option>
+                    <option value="spaa">Antiaéreo</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="search">Búsqueda</label>
+                <input type="text" id="search" placeholder="Nombre del tanque...">
+            </div>
+        </div>
+        
+        <div class="tanks-grid" id="tanks-container">
+            <!-- Los tanques se cargarán aquí con JavaScript -->
+        </div>
+    </div>
+    
+    <div class="tank-modal" id="tank-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-tank-name">Nombre del Tanque</h2>
+                <button class="close-modal" id="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-image">Imagen del tanque</div>
+                <div class="modal-stats">
+                    <div class="stat-box">
+                        <h3 class="stat-title">Especificaciones</h3>
+                        <div class="stat-item">
+                            <span class="detail-label">Nación:</span>
+                            <span id="modal-nation">USA</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="detail-label">Rango:</span>
+                            <span id="modal-rank">III</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="detail-label">BR:</span>
+                            <span id="modal-br">4.7</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="detail-label">Tripulación:</span>
+                            <span id="modal-crew">4</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="detail-label">Año:</span>
+                            <span id="modal-year">1942</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-box">
+                        <h3 class="stat-title">Blindaje (mm)</h3>
+                        <div class="stat-item">
+                            <span class="detail-label">Frontal:</span>
+                            <span id="modal-armor-front">80</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="detail-label">Lateral:</span>
+                            <span id="modal-armor-side">40</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="detail-label">Trasero:</span>
+                            <span id="modal-armor-rear">30</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="detail-label">Torreta:</span>
+                            <span id="modal-armor-turret">50</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-box">
+                        <h3 class="stat-title">Movilidad</h3>
+                        <div class="stat-item">
+                            <span class="detail-label">Velocidad:</span>
+                            <span id="modal-speed">42 km/h</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="detail-label">Potencia:</span>
+                            <span id="modal-power">400 hp</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="detail-label">Relación P/T:</span>
+                            <span id="modal-ratio">15.2 hp/t</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="detail-label">Tracción:</span>
+                            <span id="modal-terrain">Buena</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-box">
+                        <h3 class="stat-title">Armamento</h3>
+                        <div class="stat-item">
+                            <span class="detail-label">Cañón:</span>
+                            <span id="modal-gun">75 mm M3</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="detail-label">Penetración:</span>
+                            <span id="modal-pen">110 mm</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="detail-label">Cadencia:</span>
+                            <span id="modal-fire-rate">15 rpm</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="detail-label">Estabilizador:</span>
+                            <span id="modal-stabilizer">Vertical</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-box">
+                        <h3 class="stat-title">Munición</h3>
+                        <div class="stat-item">
+                            <span class="detail-label">APCBC:</span>
+                            <span id="modal-ammo1">30</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="detail-label">APCR:</span>
+                            <span id="modal-ammo2">10</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="detail-label">HE:</span>
+                            <span id="modal-ammo3">15</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-box">
+                        <h3 class="stat-title">Características</h3>
+                        <div class="stat-item">
+                            <span class="detail-label">Radio:</span>
+                            <span id="modal-radio">Sí</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="detail-label">Reparación:</span>
+                            <span id="modal-repair">25 s</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="detail-label">Extintor:</span>
+                            <span id="modal-extinguisher">3</span>
+                        </div>
+                    </div>
+                    
+                    <div class="history-box">
+                        <h3 class="stat-title">Historia</h3>
+                        <p class="history-text" id="modal-history">Historia del tanque...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        © 2023 War Thunder. Todos los derechos reservados.
+    </div>
+
+    <script>
+        // Datos de tanques con cazatanques, antiaéreos, tanques de Guerra Fría y franceses
+        const tanksData = [
+            // USA
+            {
+                id: 1,
+                name: "M4A1 Sherman",
+                nation: "usa",
+                rank: 2,
+                br: 3.7,
+                type: "medium",
+                image:"img/usa/sherman.jpg",
+                crew: 5,
+                year: 1942,
+                armor: { front: 50, side: 38, rear: 38, turret: 76 },
+                mobility: { speed: 39, power: 400, ratio: 15.2, terrain: "Buena" },
+                armament: { gun: "75 mm M3", penetration: 110, fireRate: 15, stabilizer: "Vertical" },
+                ammunition: { apcbc: 30, apcr: 10, he: 15 },
+                features: { radio: "Sí", repair: 25, extinguisher: 3 },
+                history: "El M4 Sherman fue el tanque medio más utilizado por los Estados Unidos durante la Segunda Guerra Mundial. Producido en grandes números, sirvió en todos los frentes y fue conocido por su fiabilidad mecánica, aunque su blindaje y armamento eran inferior a los de los tanques pesados alemanes."
+            },
+            {
+                id: 2,
+                name: "M18 Hellcat",
+                nation: "usa",
+                rank: 3,
+                br: 5.7,
+                type: "td",
+                image:"img/usa/m18_hellcat.jpg",
+                crew: 5,
+                year: 1943,
+                armor: { front: 12, side: 12, rear: 12, turret: 25 },
+                mobility: { speed: 72, power: 400, ratio: 20.0, terrain: "Buena" },
+                armament: { gun: "76 mm M1", penetration: 150, fireRate: 12, stabilizer: "No" },
+                ammunition: { apcbc: 30, apcr: 10, he: 10 },
+                features: { radio: "Sí", repair: 20, extinguisher: 3 },
+                history: "El M18 Hellcat fue el cazatanques más rápido de la Segunda Guerra Mundial. Diseñado alrededor de su potente cañón de 76 mm, su movilidad excepcional le permitía adoptar tácticas de 'disparar y desplazarse'."
+            },
+            {
+                id: 3,
+                name: "M16 MGMC",
+                nation: "usa",
+                rank: 1,
+                br: 2.0,
+                type: "spaa",
+                image:"img/usa/m16.jpeg",
+                crew: 5,
+                year: 1942,
+                armor: { front: 12, side: 6, rear: 6, turret: 0 },
+                mobility: { speed: 60, power: 147, ratio: 12.3, terrain: "Buena" },
+                armament: { gun: "4x 12.7 mm M2HB", penetration: 28, fireRate: 575, stabilizer: "No" },
+                ammunition: { ap: 2000, api: 1000, tracers: 500 },
+                features: { radio: "Sí", repair: 15, extinguisher: 2 },
+                history: "El M16 Multiple Gun Motor Carriage fue uno de los sistemas antiaéreos más efectivos de la Segunda Guerra Mundial. Basado en el chasis del semioruga M3, montaba cuatro ametralladoras M2 Browning de 12.7 mm."
+            },
+            {
+                id: 4,
+                name: "M60A1 RISE",
+                nation: "usa",
+                rank: 6,
+                br: 8.7,
+                type: "medium",
+                image:"img/usa/m60a1.webp",
+                crew: 4,
+                year: 1975,
+                armor: { front: 250, side: 75, rear: 40, turret: 250 },
+                mobility: { speed: 48, power: 750, ratio: 15.4, terrain: "Buena" },
+                armament: { gun: "105 mm M68", penetration: 350, fireRate: 9, stabilizer: "Bidireccional" },
+                ammunition: { apfsds: 40, heat: 15, he: 5 },
+                features: { radio: "Sí", repair: 18, extinguisher: 4 },
+                history: "El M60A1 RISE (Reliability Improvements for Selected Equipment) fue una importante modernización del tanque M60. Incluía un motor mejorado, sistema de protección NBC y mejoras en el control de fuego. Sirvió como columna vertebral del Ejército de EE.UU. durante la Guerra Fría."
+            },
+            
+            // Alemania
+            {
+                id: 5,
+                name: "Tiger H1",
+                nation: "germany",
+                rank: 3,
+                br: 5.3,
+                type: "heavy",
+                image:"img/germany/tiger.jpeg",
+                crew: 5,
+                year: 1942,
+                armor: { front: 100, side: 80, rear: 80, turret: 100 },
+                mobility: { speed: 38, power: 700, ratio: 12.3, terrain: "Regular" },
+                armament: { gun: "88 mm KwK 36", penetration: 165, fireRate: 8, stabilizer: "No" },
+                ammunition: { apcbc: 40, apcr: 10, he: 10 },
+                features: { radio: "Sí", repair: 35, extinguisher: 3 },
+                history: "El Tiger I fue uno de los tanques más icónicos de la Segunda Guerra Mundial. Diseñado para romper las defensas enemigas, su poderoso cañón de 88 mm podía destruir cualquier tanque aliado a largas distancias."
+            },
+            {
+                id: 6,
+                name: "Jagdpanzer IV",
+                nation: "germany",
+                rank: 3,
+                br: 4.7,
+                type: "td",
+                image:"img/germany/jagd.jpeg",
+                crew: 4,
+                year: 1943,
+                armor: { front: 60, side: 30, rear: 20, turret: 0 },
+                mobility: { speed: 40, power: 265, ratio: 12.0, terrain: "Buena" },
+                armament: { gun: "75 mm Pak 39 L/48", penetration: 135, fireRate: 10, stabilizer: "No" },
+                ammunition: { apcbc: 35, apcr: 10, he: 15 },
+                features: { radio: "Sí", repair: 25, extinguisher: 3 },
+                history: "El Jagdpanzer IV fue un cazatanques alemán basado en el chasis del Panzer IV. Su diseño bajo y perfil achaparrado lo hacía difícil de detectar y impactar."
+            },
+            {
+                id: 7,
+                name: "Wirbelwind",
+                nation: "germany",
+                rank: 2,
+                br: 4.3,
+                type: "spaa",
+                image:"img/germany/Wirbelwind.gif",
+                crew: 5,
+                year: 1944,
+                armor: { front: 16, side: 10, rear: 10, turret: 16 },
+                mobility: { speed: 38, power: 300, ratio: 12.0, terrain: "Regular" },
+                armament: { gun: "4x 20 mm Flak 38", penetration: 45, fireRate: 680, stabilizer: "No" },
+                ammunition: { ap: 2000, he: 2000, tracers: 500 },
+                features: { radio: "Sí", repair: 20, extinguisher: 3 },
+                history: "El Wirbelwind (Torbellino) fue uno de los antiaéreos alemanes más temidos de la Segunda Guerra Mundial. Montaba cuatro cañones automáticos Flak 38 de 20 mm en una torreta abierta."
+            },
+            {
+                id: 8,
+                name: "Leopard 1A5",
+                nation: "germany",
+                rank: 6,
+                br: 8.7,
+                type: "medium",
+                image:"img/germany/leopard.jpeg",
+                crew: 4,
+                year: 1987,
+                armor: { front: 70, side: 35, rear: 25, turret: 52 },
+                mobility: { speed: 65, power: 830, ratio: 19.6, terrain: "Excelente" },
+                armament: { gun: "105 mm L7A3", penetration: 390, fireRate: 9, stabilizer: "Bidireccional" },
+                ammunition: { apfsds: 35, heat: 10, he: 5 },
+                features: { radio: "Sí", repair: 16, extinguisher: 4 },
+                history: "El Leopard 1A5 fue una modernización importante del Leopard 1, con un nuevo sistema de control de tiro EMES 18, telémetro láser y visión termal. Aunque su blindaje seguía siendo ligero, sus capacidades de disparo y movilidad lo mantuvieron competitivo hasta finales de la Guerra Fría."
+            },
+            
+            // URSS
+            {
+                id: 9,
+                name: "T-34-85",
+                nation: "ussr",
+                rank: 3,
+                br: 5.7,
+                type: "medium",
+                image:"img/urss/t-34-85.webp",
+                crew: 5,
+                year: 1944,
+                armor: { front: 45, side: 45, rear: 40, turret: 90 },
+                mobility: { speed: 54, power: 500, ratio: 19.6, terrain: "Buena" },
+                armament: { gun: "85 mm D-5T", penetration: 140, fireRate: 10, stabilizer: "No" },
+                ammunition: { apcbc: 35, apcr: 10, he: 15 },
+                features: { radio: "Sí", repair: 25, extinguisher: 3 },
+                history: "El T-34-85 fue la evolución del famoso T-34/76, mejorado con una torreta más grande que albergaba un cañón de 85 mm. Esta mejora le permitió enfrentarse en mejores condiciones a los tanques alemanes Tiger y Panther."
+            },
+            {
+                id: 10,
+                name: "SU-152",
+                nation: "ussr",
+                rank: 3,
+                br: 4.7,
+                type: "td",
+                image:"img/urss/su.jpg",
+                crew: 5,
+                year: 1943,
+                armor: { front: 75, side: 60, rear: 60, turret: 0 },
+                mobility: { speed: 43, power: 600, ratio: 12.0, terrain: "Regular" },
+                armament: { gun: "152 mm ML-20S", penetration: 125, fireRate: 2, stabilizer: "No" },
+                ammunition: { ap: 15, he: 10 },
+                features: { radio: "Sí", repair: 30, extinguisher: 3 },
+                history: "El SU-152 fue un cazatanques pesado soviético apodado 'Zveroboy' (Matabestias) por su efectividad contra los tanques pesados alemanes. Utilizaba el chasis del KV-1S y montaba un obús de 152 mm."
+            },
+            {
+                id: 11,
+                name: "ZSU-37",
+                nation: "ussr",
+                rank: 2,
+                br: 4.3,
+                type: "spaa",
+                image:"img/urss/zsu.jpeg",
+                crew: 4,
+                year: 1945,
+                armor: { front: 15, side: 10, rear: 10, turret: 15 },
+                mobility: { speed: 45, power: 170, ratio: 12.1, terrain: "Regular" },
+                armament: { gun: "37 mm 61-K", penetration: 60, fireRate: 160, stabilizer: "No" },
+                ammunition: { ap: 200, he: 100, tracers: 50 },
+                features: { radio: "Sí", repair: 20, extinguisher: 2 },
+                history: "El ZSU-37 fue el primer sistema antiaéreo autopropulsado soviético producido en serie. Desarrollado hacia el final de la Segunda Guerra Mundial, montaba un cañón automático de 37 mm en un chasis de tanque ligero T-70."
+            },
+            {
+                id: 12,
+                name: "T-72B",
+                nation: "ussr",
+                rank: 7,
+                br: 10.3,
+                type: "medium",
+                image:"img/urss/t-72b.jpg",  
+                crew: 3,
+                year: 1985,
+                armor: { front: 500, side: 80, rear: 50, turret: 530 },
+                mobility: { speed: 60, power: 780, ratio: 18.9, terrain: "Buena" },
+                armament: { gun: "125 mm 2A46M", penetration: 460, fireRate: 8, stabilizer: "Bidireccional" },
+                ammunition: { apfsds: 28, heat: 10, atgm: 6 },
+                features: { radio: "Sí", repair: 22, extinguisher: 5 },
+                history: "El T-72B fue una importante modernización del T-72 soviético, con blindaje compuesto mejorado, sistema de control de fuego 1A40-1 y capacidad para disparar misiles guiados a través del cañón. Representó la columna vertebral de las fuerzas blindadas del Pacto de Varsovia durante los últimos años de la Guerra Fría."
+            },
+            {
+                id: 13,
+                name: "PT-76",
+                nation: "ussr",
+                rank: 2,
+                br: 5.3,
+                type: "light",
+                image:"img/urss/pt.jpg",
+                crew: 3,
+                year: 1951,
+                armor: { front: 14, side: 14, rear: 7, turret: 11 },
+                mobility: { speed: 44, power: 240, ratio: 18.1, terrain: "Anfibio" },
+                armament: { gun: "76 mm D-56T", penetration: 125, fireRate: 7, stabilizer: "No" },
+                ammunition: { apcbc: 25, heat: 15, he: 10 },
+                features: { radio: "Sí", repair: 15, extinguisher: 2 },
+                history: "El PT-76 fue un tanque ligero anfibio soviético diseñado para reconocimiento y asalto anfibio. Aunque su blindaje era muy ligero, su capacidad para cruzar ríos y lagos sin preparación lo hizo valioso para operaciones de vanguardia. Sirvió en numerosos conflictos durante la Guerra Fría."
+            },
+            
+            // Gran Bretaña
+            {
+                id: 14,
+                name: "Cromwell I",
+                nation: "britain",
+                rank: 2,
+                br: 3.7,
+                type: "medium",
+                image:"img/britanico/crom.jpg",
+                crew: 5,
+                year: 1943,
+                armor: { front: 64, side: 32, rear: 32, turret: 76 },
+                mobility: { speed: 64, power: 600, ratio: 24.0, terrain: "Buena" },
+                armament: { gun: "57 mm 6pdr OQF Mk.III", penetration: 130, fireRate: 20, stabilizer: "No" },
+                ammunition: { apcbc: 40, apcr: 15 },
+                features: { radio: "Sí", repair: 25, extinguisher: 3 },
+                history: "El Cromwell fue el primer tanque británico que combinó buena movilidad con un blindaje razonable. Diseñado como tanque cruiser, su alta velocidad lo hacía ideal para operaciones de explotación y reconocimiento."
+            },
+            {
+                id: 15,
+                name: "Archer",
+                nation: "britain",
+                rank: 2,
+                br: 3.7,
+                type: "td",
+                image:"img/britanico/archer.jpg",
+                crew: 4,
+                year: 1943,
+                armor: { front: 20, side: 14, rear: 14, turret: 0 },
+                mobility: { speed: 32, power: 165, ratio: 9.7, terrain: "Regular" },
+                armament: { gun: "76 mm 17pdr OQF", penetration: 171, fireRate: 10, stabilizer: "No" },
+                ammunition: { apcbc: 25, apds: 10 },
+                features: { radio: "Sí", repair: 25, extinguisher: 2 },
+                history: "El Archer fue un cazatanques británico único con el cañón montado hacia atrás. Esta configuración permitía disparar y retirarse rápidamente sin tener que girar el vehículo."
+            },
+            {
+                id: 16,
+                name: "Chieftain Mk.5",
+                nation: "britain",
+                rank: 6,
+                br: 8.7,
+                type: "heavy",
+                image:"img/britanico/Chieftain.jpg",
+                crew: 4,
+                year: 1971,
+                armor: { front: 400, side: 50, rear: 35, turret: 350 },
+                mobility: { speed: 48, power: 750, ratio: 12.5, terrain: "Regular" },
+                armament: { gun: "120 mm L11A5", penetration: 400, fireRate: 6, stabilizer: "Bidireccional" },
+                ammunition: { apds: 32, hesh: 18, smoke: 10 },
+                features: { radio: "Sí", repair: 25, extinguisher: 4 },
+                history: "El Chieftain fue el principal tanque de batalla británico durante la Guerra Fría. Destacaba por su poderoso cañón de 120 mm y su excelente blindaje frontal, aunque su movilidad era limitada. El Mk.5 incorporaba un motor mejorado y sistema de control de fuego más avanzado."
+            },
+            
+            // Japón
+            {
+                id: 17,
+                name: "Chi-Nu II",
+                nation: "japan",
+                rank: 2,
+                br: 4.7,
+                type: "medium",
+                image:"img/japon/chi.jpeg",
+                crew: 5,
+                year: 1945,
+                armor: { front: 50, side: 25, rear: 20, turret: 50 },
+                mobility: { speed: 39, power: 240, ratio: 10.4, terrain: "Regular" },
+                armament: { gun: "75 mm Type 5", penetration: 145, fireRate: 10, stabilizer: "No" },
+                ammunition: { apcbc: 35, apcr: 10, he: 10 },
+                features: { radio: "Sí", repair: 30, extinguisher: 3 },
+                history: "El Chi-Nu II fue el último tanque medio producido por Japón durante la Segunda Guerra Mundial. Desarrollado para enfrentar a los M4 Sherman estadounidenses, su cañón de 75 mm era comparable al de los tanques aliados."
+            },
+            {
+                id: 18,
+                name: "Type 16 MCV",
+                nation: "japan",
+                rank: 6,
+                br: 8.7,
+                type: "light",
+                image:"img/japon/type.jpeg",
+                crew: 4,
+                year: 2016,
+                armor: { front: 35, side: 20, rear: 20, turret: 25 },
+                mobility: { speed: 100, power: 570, ratio: 23.8, terrain: "Excelente" },
+                armament: { gun: "105 mm JP91", penetration: 380, fireRate: 10, stabilizer: "Bidireccional" },
+                ammunition: { apfsds: 30, heat: 10, he: 5 },
+                features: { radio: "Sí", repair: 12, extinguisher: 4 },
+                history: "El Type 16 es un vehículo de combate móvil desarrollado para las Fuerzas de Autodefensa de Japón. Su diseño de ruedas 8x8 le proporciona alta movilidad en carreteras, mientras que su cañón de 105 mm le da capacidad anticarro. Representa el enfoque moderno japonés de movilidad sobre blindaje."
+            },
+            
+            // Suecia
+            {
+                id: 19,
+                name: "Pvkv m/43",
+                nation: "sweden",
+                rank: 1,
+                br: 2.7,
+                type: "td",
+                image:"img/suecia/pvkv.jpeg",
+                crew: 4,
+                year: 1944,
+                armor: { front: 18, side: 10, rear: 10, turret: 18 },
+                mobility: { speed: 40, power: 160, ratio: 10.7, terrain: "Buena" },
+                armament: { gun: "75 mm kan m/41", penetration: 95, fireRate: 12, stabilizer: "No" },
+                ammunition: { apcbc: 40, apcr: 15 },
+                features: { radio: "Sí", repair: 20, extinguisher: 2 },
+                history: "El Pansarvärnskanonvagn m/43 fue el primer cazatanques sueco producido en serie. Desarrollado durante la Segunda Guerra Mundial para defender la neutralidad sueca, montaba un cañón de 75 mm en una superestructura fija sobre un chasis de tanque checo."
+            },
+            {
+                id: 20,
+                name: "Strv 103C",
+                nation: "sweden",
+                rank: 6,
+                br: 8.3,
+                type: "td",
+                image:"img/suecia/str.jpeg",
+                crew: 3,
+                year: 1971,
+                armor: { front: 100, side: 50, rear: 30, turret: 0 },
+                mobility: { speed: 50, power: 490, ratio: 18.1, terrain: "Buena" },
+                armament: { gun: "105 mm L74", penetration: 400, fireRate: 15, stabilizer: "Hidroneumático" },
+                ammunition: { apds: 30, he: 15, smoke: 10 },
+                features: { radio: "Sí", repair: 18, extinguisher: 4 },
+                history: "El Strv 103, o 'S-Tanque', es un diseño revolucionario sin torreta. El cañón se apunta mediante la suspensión hidroneumática del vehículo. El modelo 103C incorporaba un motor diesel adicional, mejoras de blindaje y sistema de control de fuego. Su perfil bajo lo hace excelente para emboscadas."
+            },
+            
+            // Israel
+            {
+                id: 21,
+                name: "Merkava Mk.1",
+                nation: "israel",
+                rank: 6,
+                br: 9.0,
+                type: "medium",
+                image:"img/israel/merkava.webp",
+                crew: 4,
+                year: 1979,
+                armor: { front: 500, side: 76, rear: 50, turret: 500 },
+                mobility: { speed: 60, power: 900, ratio: 15.0, terrain: "Buena" },
+                armament: { gun: "105 mm M68", penetration: 300, fireRate: 9, stabilizer: "Bidireccional" },
+                ammunition: { apfsds: 30, heat: 10 },
+                features: { radio: "Sí", repair: 20, extinguisher: 4 },
+                history: "El Merkava (Carro de Guerra) es el primer tanque de diseño y producción israelí. Desarrollado tras la experiencia de las guerras árabe-israelíes, incorpora lecciones aprendidas en combate. Su diseño único coloca el motor en la parte delantera para proporcionar protección adicional a la tripulación."
+            },
+            
+            // China
+            {
+                id: 22,
+                name: "Type 63",
+                nation: "china",
+                rank: 1,
+                br: 2.3,
+                type: "spaa",
+                image:"img/china/tipo.jpeg",
+                crew: 5,
+                year: 1965,
+                armor: { front: 15, side: 10, rear: 10, turret: 0 },
+                mobility: { speed: 60, power: 240, ratio: 16.0, terrain: "Buena" },
+                armament: { gun: "2x 37 mm Type 63", penetration: 55, fireRate: 360, stabilizer: "No" },
+                ammunition: { ap: 500, he: 500, tracers: 100 },
+                features: { radio: "Sí", repair: 20, extinguisher: 2 },
+                history: "El Type 63 es un sistema antiaéreo autopropulsado chino basado en el chasis del tanque ligero Type 62. Monta dos cañones automáticos de 37 mm que pueden ser utilizados contra blancos aéreos o terrestres."
+            },
+            {
+                id: 23,
+                name: "Type 69-II",
+                nation: "china",
+                rank: 5,
+                br: 8.0,
+                type: "medium",
+                image:"img/china/Type_79.jpg",
+                crew: 4,
+                year: 1982,
+                armor: { front: 250, side: 80, rear: 45, turret: 200 },
+                mobility: { speed: 50, power: 580, ratio: 15.3, terrain: "Regular" },
+                armament: { gun: "100 mm Type 69", penetration: 290, fireRate: 7, stabilizer: "Bidireccional" },
+                ammunition: { apfsds: 30, heat: 15, he: 5 },
+                features: { radio: "Sí", repair: 20, extinguisher: 3 },
+                history: "El Type 69-II fue la primera modernización importante del Type 59 chino. Incorporaba un nuevo cañón de 100 mm con estabilizador, sistema de control de fuego mejorado y motor más potente. Fue ampliamente exportado y participó en varios conflictos durante los años 80."
+            },
+            
+            // Italia
+            {
+                id: 24,
+                name: "OTOMATIC",
+                nation: "italy",
+                rank: 6,
+                br: 9.0,
+                type: "spaa",
+                image:"img/italia/otomatic.png",
+                crew: 4,
+                year: 1987,
+                armor: { front: 25, side: 15, rear: 15, turret: 25 },
+                mobility: { speed: 70, power: 750, ratio: 18.8, terrain: "Buena" },
+                armament: { gun: "76 mm OTO Melara", penetration: 120, fireRate: 120, stabilizer: "Bidireccional" },
+                ammunition: { he: 50, apfsds: 30, guided: 10 },
+                features: { radio: "Sí", repair: 15, extinguisher: 4 },
+                history: "El OTOMATIC es un sistema antiaéreo italiano de última generación que combina las capacidades antiaéreas y anticarro. Monta un cañón naval de 76 mm modificado capaz de disparar munición programable y penetrante."
+            },
+            {
+                id: 25,
+                name: "OF-40",
+                nation: "italy",
+                rank: 6,
+                br: 8.7,
+                type: "medium",
+                image:"img/italia/of.jpg",
+                crew: 4,
+                year: 1980,
+                armor: { front: 50, side: 30, rear: 25, turret: 50 },
+                mobility: { speed: 60, power: 830, ratio: 19.1, terrain: "Buena" },
+                armament: { gun: "105 mm L7", penetration: 300, fireRate: 9, stabilizer: "Bidireccional" },
+                ammunition: { apfsds: 30, heat: 10 },
+                features: { radio: "Sí", repair: 20, extinguisher: 4 },
+                history: "El OF-40 fue el primer tanque moderno desarrollado por Italia tras la Segunda Guerra Mundial. Creado por OTO Melara y Fiat para exportación, combinaba componentes probados de diversos diseños occidentales."
+            },
+            
+            // Francia
+            {
+                id: 26,
+                name: "AMX-13",
+                nation: "france",
+                rank: 3,
+                br: 6.0,
+                type: "light",
+                image: "img/francia/AMX-13.jpg",
+                crew: 3,
+                year: 1952,
+                armor: { front: 40, side: 25, rear: 15, turret: 40 },
+                mobility: { speed: 60, power: 250, ratio: 17.9, terrain: "Buena" },
+                armament: { gun: "75 mm CN-75-50", penetration: 175, fireRate: 12, stabilizer: "No" },
+                ammunition: { apcbc: 30, he: 12 },
+                features: { radio: "Sí", repair: 15, extinguisher: 2 },
+                history: "El AMX-13 fue un tanque ligero francés revolucionario con un sistema de carga automática que permitía una alta cadencia de fuego. Su torreta oscilante era un diseño único que albergaba el cañón en la parte inferior. Fue exportado a más de 25 países y sirvió en numerosos conflictos durante la Guerra Fría."
+            },
+            {
+                id: 27,
+                name: "AMX-30B2",
+                nation: "france",
+                rank: 6,
+                br: 8.7,
+                type: "medium",
+                image: "img/francia/AMX-30.jpeg",
+                crew: 4,
+                year: 1982,
+                armor: { front: 80, side: 35, rear: 30, turret: 80 },
+                mobility: { speed: 65, power: 720, ratio: 17.7, terrain: "Buena" },
+                armament: { gun: "105 mm CN-105-F1", penetration: 360, fireRate: 8, stabilizer: "Bidireccional" },
+                ammunition: { apfsds: 30, heat: 15, he: 5 },
+                features: { radio: "Sí", repair: 18, extinguisher: 4 },
+                history: "El AMX-30B2 fue una importante modernización del tanque francés AMX-30. Incorporaba un nuevo motor, transmisión automática, sistema de control de fuego COTAC con visión termal y telémetro láser. Aunque su blindaje era relativo ligero, su movilidad y armamento lo hacían competitivo."
+            },
+            {
+                id: 28,
+                name: "AMX-50",
+                nation: "france",
+                rank: 5,
+                br: 7.7,
+                type: "heavy",
+                image: "img/francia/AMX50.jpeg",
+                crew: 5,
+                year: 1951,
+                armor: { front: 120, side: 80, rear: 40, turret: 100 },
+                mobility: { speed: 51, power: 1200, ratio: 16.0, terrain: "Regular" },
+                armament: { gun: "120 mm SA46", penetration: 280, fireRate: 6, stabilizer: "No" },
+                ammunition: { apcbc: 25, he: 15 },
+                features: { radio: "Sí", repair: 25, extinguisher: 3 },
+                history: "El AMX-50 fue el intento francés de crear un tanque pesado después de la Segunda Guerra Mundial. Inspirado en los diseños alemanes Panther y Tiger, contaba con una suspensión de barras de torsión y una torreta oscilante. Aunque prometedor, el proyecto fue cancelado en favor de tanques más ligeros como el AMX-30."
+            },
+            {
+                id: 29,
+                name: "Char 25T",
+                nation: "france",
+                rank: 5,
+                br: 7.7,
+                type: "light",
+                image: "img/francia/CHAR.jpeg",
+                crew: 4,
+                year: 1957,
+                armor: { front: 40, side: 30, rear: 20, turret: 40 },
+                mobility: { speed: 65, power: 350, ratio: 19.4, terrain: "Excelente" },
+                armament: { gun: "90 mm CN-90", penetration: 220, fireRate: 10, stabilizer: "No" },
+                ammunition: { apcbc: 30, heat: 15, he: 5 },
+                features: { radio: "Sí", repair: 16, extinguisher: 3 },
+                history: "El Char 25T (Char de 25 Tonnes) fue un tanque ligero francés diseñado para reconocimiento y explotación de brechas. Su alta velocidad y potente cañón de 90 mm lo hacían ideal para emboscadas y ataques rápidos. Aunque su blindaje era ligero, su movilidad excepcional lo compensaba."
+            },
+            {
+                id: 30,
+                name: "Leclerc",
+                nation: "france",
+                rank: 7,
+                br: 11.3,
+                type: "medium",
+                image: "img/francia/leclerc.jpeg",
+                crew: 3,
+                year: 1992,
+                armor: { front: 600, side: 100, rear: 50, turret: 650 },
+                mobility: { speed: 72, power: 1500, ratio: 27.8, terrain: "Excelente" },
+                armament: { gun: "120 mm CN-120-26", penetration: 580, fireRate: 12, stabilizer: "Bidireccional" },
+                ammunition: { apfsds: 32, heat: 10, he: 8 },
+                features: { radio: "Sí", repair: 14, extinguisher: 5 },
+                history: "El Leclerc es el tanque de batalla principal francés de tercera generación. Incorpora tecnología avanzada como un sistema de control de fuego digital, carga automática, y blindaje modular. Su alta movilidad y potencia de fuego lo colocan entre los tanques más avanzados del mundo. Nombrado en honor al Mariscal Philippe Leclerc de Hauteclocque, héroe de la Segunda Guerra Mundial."
+            }
+        ];
+
+        // Referencias a elementos del DOM
+        const tanksContainer = document.getElementById('tanks-container');
+        const tankModal = document.getElementById('tank-modal');
+        const closeModal = document.getElementById('close-modal');
+        const nationFilter = document.getElementById('nation');
+        const rankFilter = document.getElementById('rank');
+        const typeFilter = document.getElementById('type');
+        const searchFilter = document.getElementById('search');
+
+        // Función para mostrar los tanques en la cuadrícula
+        function renderTanks(tanks) {
+            tanksContainer.innerHTML = '';
+            
+            tanks.forEach(tank => {
+                const typeClass = `type-${tank.type}`;
+                const typeName = getTypeName(tank.type);
+                
+                const tankCard = document.createElement('div');
+                tankCard.className = 'tank-card';
+                tankCard.innerHTML = `
+                    <div class="tank-image">
+                        <span class="tank-type-badge ${typeClass}">${typeName}</span>
+                        <span class="tank-nation">${tank.nation.toUpperCase()}</span>
+                        <span class="tank-rank">Rango ${tank.rank}</span>
+                        <img src="${tank.image}" alt="Imagen del ${tank.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div class="tank-info">
+                        <h3 class="tank-name">${tank.name}</h3>
+                        <div class="tank-details">
+                            <div class="tank-detail">
+                                <span class="detail-label">Nación:</span> ${tank.nation.toUpperCase()}
+                            </div>
+                            <div class="tank-detail">
+                                <span class="detail-label">Rango:</span> ${tank.rank}
+                            </div>
+                            <div class="tank-detail">
+                                <span class="detail-label">BR:</span> ${tank.br}
+                            </div>
+                            <div class="tank-detail">
+                                <span class="detail-label">Tipo:</span> ${typeName}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                tankCard.addEventListener('click', () => openTankModal(tank));
+                tanksContainer.appendChild(tankCard);
+            });
+        }
+
+        // Función para obtener el nombre completo del tipo de tanque
+        function getTypeName(type) {
+            const types = {
+                'light': 'Ligero',
+                'medium': 'Medio',
+                'heavy': 'Pesado',
+                'td': 'Cazatanques',
+                'spaa': 'Antiaéreo'
+            };
+            return types[type] || type;
+        }
+
+        // Función para abrir el modal con la información del tanque
+        function openTankModal(tank) {
+            document.getElementById('modal-tank-name').textContent = tank.name;
+            document.getElementById('modal-nation').textContent = tank.nation.toUpperCase();
+            document.getElementById('modal-rank').textContent = tank.rank;
+            document.getElementById('modal-br').textContent = tank.br;
+            document.getElementById('modal-crew').textContent = tank.crew;
+            document.getElementById('modal-year').textContent = tank.year;
+            
+            document.getElementById('modal-armor-front').textContent = tank.armor.front;
+            document.getElementById('modal-armor-side').textContent = tank.armor.side;
+            document.getElementById('modal-armor-rear').textContent = tank.armor.rear;
+            document.getElementById('modal-armor-turret').textContent = tank.armor.turret || "N/A";
+            
+            document.getElementById('modal-speed').textContent = `${tank.mobility.speed} km/h`;
+            document.getElementById('modal-power').textContent = `${tank.mobility.power} hp`;
+            document.getElementById('modal-ratio').textContent = `${tank.mobility.ratio} hp/t`;
+            document.getElementById('modal-terrain').textContent = tank.mobility.terrain;
+            
+            document.getElementById('modal-gun').textContent = tank.armament.gun;
+            document.getElementById('modal-pen').textContent = `${tank.armament.penetration} mm`;
+            document.getElementById('modal-fire-rate').textContent = `${tank.armament.fireRate} rpm`;
+            document.getElementById('modal-stabilizer').textContent = tank.armament.stabilizer;
+            
+            document.getElementById('modal-ammo1').textContent = tank.ammunition.apcbc || tank.ammunition.ap || tank.ammunition.apfsds || "N/A";
+            document.getElementById('modal-ammo2').textContent = tank.ammunition.apcr || tank.ammunition.heat || tank.ammunition.he || "N/A";
+            document.getElementById('modal-ammo3').textContent = tank.ammunition.he || tank.ammunition.api || tank.ammunition.guided || "N/A";
+            
+            document.getElementById('modal-radio').textContent = tank.features.radio;
+            document.getElementById('modal-repair').textContent = `${tank.features.repair} s`;
+            document.getElementById('modal-extinguisher').textContent = tank.features.extinguisher;
+            
+            document.getElementById('modal-history').textContent = tank.history;
+            const modalImageContainer = document.querySelector('#tank-modal .modal-image');
+            modalImageContainer.innerHTML = `<img src="${tank.image}" alt="Imagen del ${tank.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
+            tankModal.style.display = 'block';
+        }
+
+        // Función para filtrar los tanques
+        function filterTanks() {
+            const nationValue = nationFilter.value;
+            const rankValue = rankFilter.value;
+            const typeValue = typeFilter.value;
+            const searchValue = searchFilter.value.toLowerCase();
+            
+            const filteredTanks = tanksData.filter(tank => {
+                return (nationValue === 'all' || tank.nation === nationValue) &&
+                       (rankValue === 'all' || tank.rank.toString() === rankValue) &&
+                       (typeValue === 'all' || tank.type === typeValue) &&
+                       (tank.name.toLowerCase().includes(searchValue));
+            });
+            
+            renderTanks(filteredTanks);
+        }
+
+        // Event listeners para los filtros
+        nationFilter.addEventListener('change', filterTanks);
+        rankFilter.addEventListener('change', filterTanks);
+        typeFilter.addEventListener('change', filterTanks);
+        searchFilter.addEventListener('input', filterTanks);
+
+        // Cerrar el modal
+        closeModal.addEventListener('click', () => {
+            tankModal.style.display = 'none';
+        });
+
+        // Cerrar el modal al hacer clic fuera del contenido
+        window.addEventListener('click', (event) => {
+            if (event.target === tankModal) {
+                tankModal.style.display = 'none';
+            }
+        });
+
+        // Inicializar la página con todos los tanques
+        renderTanks(tanksData);
+    </script>
+</body>
+</html>
